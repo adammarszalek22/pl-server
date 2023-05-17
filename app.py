@@ -10,7 +10,6 @@ from resources.user import blp as UserBlueprint
 from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
 from datetime import timedelta
-import pl_api
 
 def create_app(db_url=None):
     
