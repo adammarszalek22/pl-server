@@ -10,9 +10,6 @@ from resources.user import blp as UserBlueprint
 from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
 from datetime import timedelta
-import threading
-from apscheduler.schedulers.background import BackgroundScheduler
-import atexit
 import pl_api
 
 def create_app(db_url=None):
