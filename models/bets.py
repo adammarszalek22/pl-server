@@ -11,13 +11,3 @@ class BetsModel(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=False, nullable=False)
     user = db.relationship("UserModel", back_populates="bets")
-
-
-'''
-id   match_id   user    goal1   goal2
-1    234234     adam     1       2
-2    234234     adam2    2       2
-3    678687     adam     3       0
-4    678687     adam2    2       0
-
-'''

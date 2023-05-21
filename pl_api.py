@@ -3,6 +3,10 @@ import json
 from db import db
 from models import BetsModel, UserModel
 
+'''
+IN PROGRESS. THIS IS NOT IMPLEMENTED IN THE FLASK APP FOR NOW.
+'''
+
 def get(url):
     response = requests.get(url)
     return json.loads(response.content)
