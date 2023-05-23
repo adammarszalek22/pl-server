@@ -46,8 +46,10 @@ class UserLogin(MethodView):
             refresh_token = create_refresh_token(identity=user.id)
             return {'access_token': access_token, 'refresh_token': refresh_token, 
                     'user_id': user.id}
-        
-        abort(401, message='Invalid credentials.')
+        elif not user:
+            abort(401, message='User not found')
+        else:
+            abort(401, message='Wrong password')
 
 @blp.route('/update/<int:user_id>')
 class UpdateInfo(MethodView):
