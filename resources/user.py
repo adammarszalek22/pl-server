@@ -29,7 +29,8 @@ class UserRegister(MethodView):
         db.session.add(user)
         db.session.commit()
 
-        return {'message': 'User created successfully.', "code": 201}
+        return {'message': 'User created successfully.'}, 201
+
 
 
 @blp.route('/login')
