@@ -5,4 +5,4 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def example():
-    print("Just seeing how this works.")
+    print("Just seeing how this works.", flush=True)

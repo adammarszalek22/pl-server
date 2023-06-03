@@ -4,7 +4,7 @@ from db import db
 from models import BetsModel, UserModel
 
 '''
-IN PROGRESS. THIS IS NOT IMPLEMENTED IN THE FLASK APP FOR NOW.
+IN PROGRESS. THIS IS NOT IN THE FLASK APP FOR NOW.
 '''
 
 def get(url):
