@@ -19,11 +19,11 @@ from models.blocklist import BlocklistModel
 def create_app(db_url=None):
     
     app = Flask(__name__)
-    #load_dotenv()
+    load_dotenv()
     connection = redis.from_url(
         os.getenv("REDIS_URL")
     )
-    app.queue = Queue("emails", connection=connection)
+    app.queue = Queue("example", connection=connection)
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"
@@ -106,8 +106,8 @@ def create_app(db_url=None):
             401
         )
 
-    with app.app_context():
-        db.create_all()
+    #with app.app_context():
+     #   db.create_all()
         
     
     api.register_blueprint(UserBlueprint)
