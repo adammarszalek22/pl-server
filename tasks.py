@@ -6,4 +6,4 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def example():
-    print("Just seeing how this works.", file=sys.stdout)
+    print("Just seeing how this works.", file=sys.stderr)
