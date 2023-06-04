@@ -105,11 +105,8 @@ def create_app(db_url=None):
             401
         )
     
-    @app.before_first_request
-    def create_tables():
+    with app.app_context():
         db.create_all()
-    #with app.app_context():
-     #   db.create_all()
         
     
     api.register_blueprint(UserBlueprint)
