@@ -17,7 +17,6 @@ from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
 
 def create_app(db_url=None):
-    
     app = Flask(__name__)
     load_dotenv()
     connection = redis.from_url(
