@@ -8,6 +8,7 @@ from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from rq import Queue
+from rq_scheduler import Scheduler
 
 import models
 
@@ -15,6 +16,7 @@ from db import db
 from resources.user import blp as UserBlueprint
 from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
+from tasks import example
 
 def create_app(db_url=None):
     app = Flask(__name__)
@@ -23,6 +25,16 @@ def create_app(db_url=None):
         os.getenv("REDIS_URL")
     )
     app.queue = Queue("example", connection=connection)
+    scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
+    scheduler.schedule(
+    scheduled_time=datetime.utcnow(), # Time for first execution, in UTC timezone
+    func=example,                     # Function to be queued
+    #args=[arg1, arg2],             # Arguments passed into function when executed
+    #kwargs={'foo': 'bar'},         # Keyword arguments passed into function when executed
+    interval=10,                   # Time before the function is called again, in seconds
+    repeat=None                     # Repeat this number of times (None means repeat forever)
+    #meta={'foo': 'bar'}            # Arbitrary pickleable data on the job itself
+    )
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"
