@@ -46,7 +46,8 @@ class UserLogin(MethodView):
         if user and pbkdf2_sha256.verify(user_data['password'], user.password):
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)
-            current_app.queue.enqueue(example)
+            print('Logged in')
+            #current_app.queue.enqueue(example)
             return {'access_token': access_token, 'refresh_token': refresh_token, 
                     'user_id': user.id}
         elif not user:
