@@ -9,6 +9,8 @@ from models import UserModel, BlocklistModel
 from schemas import PlainUserSchema, UserSchema, UserUpdateSchema, AllUserSchema
 from tasks import example
 
+import sys
+
 
 blp = Blueprint('Users', 'users', description='Operations on users')
 
@@ -46,7 +48,7 @@ class UserLogin(MethodView):
         if user and pbkdf2_sha256.verify(user_data['password'], user.password):
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)
-            print('Logged in')
+            print('Logged in', file=sys.stderr)
             #current_app.queue.enqueue(example)
             return {'access_token': access_token, 'refresh_token': refresh_token, 
                     'user_id': user.id}
