@@ -33,7 +33,7 @@ def create_app(db_url=None):
     #args=[arg1, arg2],             # Arguments passed into function when executed
     #kwargs={'foo': 'bar'},         # Keyword arguments passed into function when executed
     interval=10,                   # Time before the function is called again, in seconds
-    repeat=None                     # Repeat this number of times (None means repeat forever)
+    repeat=10                    # Repeat this number of times (None means repeat forever)
     #meta={'foo': 'bar'}            # Arbitrary pickleable data on the job itself
     )
     app.config["API_TITLE"] = "Stores REST API"
