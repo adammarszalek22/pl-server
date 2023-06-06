@@ -9,7 +9,6 @@ from db import db
 from models import UserModel, BlocklistModel
 from schemas import PlainUserSchema, UserSchema, UserUpdateSchema, AllUserSchema
 from tasks import example
-from app import scheduler
 
 import sys
 
@@ -51,7 +50,7 @@ class UserLogin(MethodView):
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)
             print('Logged in', file=sys.stderr)
-            scheduler.schedule(
+            current_app.scheduler.schedule(
             scheduled_time=datetime.utcnow(),
             func=example,
             interval=10,
