@@ -19,26 +19,24 @@ from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
 from tasks import example
 
+connection = redis.from_url(
+        os.getenv("REDIS_URL")
+    )
+queue = Queue("example", connection=connection)
+scheduler = Scheduler(queue = queue, connection = queue.connection)
+#scheduler.enqueue_in(timedelta(seconds=10), example)
+scheduler.schedule(
+        scheduled_time=datetime.utcnow(),
+        func=example,
+        interval=10,
+        repeat=10
+        )
+
+
 def create_app(db_url=None):
     app = Flask(__name__)
     load_dotenv()
-    connection = redis.from_url(
-        os.getenv("REDIS_URL")
-    )
-    app.queue = Queue("example", connection=connection)
-    app.scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
-    #scheduler.enqueue_in(timedelta(seconds=10), example)
-    '''
-    scheduler.schedule(
-    scheduled_time=datetime.utcnow(), # Time for first execution, in UTC timezone
-    func=example,                     # Function to be queued
-    args=[],             # Arguments passed into function when executed
-    #kwargs={'foo': 'bar'},         # Keyword arguments passed into function when executed
-    interval=10,                   # Time before the function is called again, in seconds
-    repeat=10                    # Repeat this number of times (None means repeat forever)
-    #meta={'foo': 'bar'}            # Arbitrary pickleable data on the job itself
-    )
-    '''
+    
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"
