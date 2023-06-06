@@ -11,5 +11,5 @@ psycopg2
 requests
 rq
 redis
-rq_scheduler
+rq-scheduler
 datetime

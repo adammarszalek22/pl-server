@@ -26,8 +26,8 @@ def create_app(db_url=None):
         os.getenv("REDIS_URL")
     )
     app.queue = Queue("example", connection=connection)
-    scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
-    scheduler.enqueue_in(timedelta(seconds=10), example)
+    app.scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
+    #scheduler.enqueue_in(timedelta(seconds=10), example)
     '''
     scheduler.schedule(
     scheduled_time=datetime.utcnow(), # Time for first execution, in UTC timezone

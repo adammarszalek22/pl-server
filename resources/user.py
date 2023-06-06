@@ -3,11 +3,13 @@ from flask_smorest import Blueprint, abort
 from flask import current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
 from passlib.hash import pbkdf2_sha256
+from datetime import datetime
 
 from db import db
 from models import UserModel, BlocklistModel
 from schemas import PlainUserSchema, UserSchema, UserUpdateSchema, AllUserSchema
 from tasks import example
+from app import scheduler
 
 import sys
 
@@ -49,6 +51,12 @@ class UserLogin(MethodView):
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)
             print('Logged in', file=sys.stderr)
+            scheduler.schedule(
+            scheduled_time=datetime.utcnow(),
+            func=example,
+            interval=10,
+            repeat=10
+            )
             #current_app.queue.enqueue(example)
             #current_app.queue.enqueue(example)
             return {'access_token': access_token, 'refresh_token': refresh_token, 
