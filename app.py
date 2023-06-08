@@ -127,6 +127,7 @@ def create_app(db_url=None):
         #app.scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
         scheduler = Scheduler('example', connection=connection)
         #scheduler.enqueue_in(timedelta(seconds=10), example)
+        #scheduler.enqueue_in(timedelta(seconds=10), example)
         scheduler.schedule(
             scheduled_time=datetime.utcnow(),
             func=example,
