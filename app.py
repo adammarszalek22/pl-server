@@ -23,19 +23,19 @@ from tasks import example
 def create_app(db_url=None):
     app = Flask(__name__)
     load_dotenv()
-    connection = redis.from_url(
-        os.getenv("REDIS_URL")
-    )
-    #app.queue = Queue("example", connection=connection)
-    #app.scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
-    app.scheduler = Scheduler('example', connection=connection)
-    #scheduler.enqueue_in(timedelta(seconds=10), example)
-    app.scheduler.schedule(
-        scheduled_time=datetime.utcnow(),
-        func=example,
-        interval=10,
-        repeat=10
-        )
+    # connection = redis.from_url(
+    #     os.getenv("REDIS_URL")
+    # )
+    # #app.queue = Queue("example", connection=connection)
+    # #app.scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
+    # scheduler = Scheduler('example', connection=connection)
+    # #scheduler.enqueue_in(timedelta(seconds=10), example)
+    # scheduler.schedule(
+    #     scheduled_time=datetime.utcnow(),
+    #     func=example,
+    #     interval=10,
+    #     repeat=10
+    #     )
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"
@@ -120,6 +120,19 @@ def create_app(db_url=None):
     
     with app.app_context():
         db.create_all()
+        connection = redis.from_url(
+            os.getenv("REDIS_URL")
+        )
+        #app.queue = Queue("example", connection=connection)
+        #app.scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
+        scheduler = Scheduler('example', connection=connection)
+        #scheduler.enqueue_in(timedelta(seconds=10), example)
+        scheduler.schedule(
+            scheduled_time=datetime.utcnow(),
+            func=example,
+            interval=10,
+            repeat=10
+            )
         
     
     api.register_blueprint(UserBlueprint)
