@@ -22,10 +22,8 @@ blp = Blueprint('Users', 'users', description='Operations on users')
 connection = redis.from_url(
             os.getenv("REDIS_URL")
 )
-scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
 scheduler = Scheduler('example', connection=connection)
-scheduler.enqueue_in(timedelta(seconds=10), example)
-scheduler.enqueue_in(timedelta(seconds=10), example)
+#scheduler.enqueue_in(timedelta(seconds=10), example)
 scheduler.schedule(
     scheduled_time=datetime.utcnow(),
     func=example,
