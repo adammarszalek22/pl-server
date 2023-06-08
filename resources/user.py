@@ -11,10 +11,27 @@ from schemas import PlainUserSchema, UserSchema, UserUpdateSchema, AllUserSchema
 from tasks import example
 
 import sys
+import redis
+import os
+from rq_scheduler import Scheduler
+from datetime import datetime, timedelta
 
 
 blp = Blueprint('Users', 'users', description='Operations on users')
 
+connection = redis.from_url(
+            os.getenv("REDIS_URL")
+)
+scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
+scheduler = Scheduler('example', connection=connection)
+scheduler.enqueue_in(timedelta(seconds=10), example)
+scheduler.enqueue_in(timedelta(seconds=10), example)
+scheduler.schedule(
+    scheduled_time=datetime.utcnow(),
+    func=example,
+    interval=10,
+    repeat=10
+    )
 
 @blp.route('/register')
 class UserRegister(MethodView):
