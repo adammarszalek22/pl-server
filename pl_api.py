@@ -19,12 +19,6 @@ response = get(url)
 
 response_1 = get(url_1)
 
-#teams - id, name, matches_played, wins, draws, losses,
-#goals_scored, goals_conceded, goal balance, points
-
-#matches - gameweek, team1, team2, score1, score2,
-#kickoff_date, kickoff_time, finished, code
-
 teams = {}
 for i in response["teams"]:
     teams[i['id']] = {}
@@ -82,7 +76,7 @@ for i in response_1:
         teams[i['team_h']]['goals_balance'] += i['team_h_score'] - i['team_a_score']
         teams[i['team_a']]['goals_balance'] += i['team_a_score'] - i['team_h_score']
     
-positions = {k: v for k, v in sorted(teams.items(), key=lambda item: (item[1]['points'], item[1]['goals_scored'], item[1]['goals_balance']), reverse=True)}
+positions = {k: v for k, v in sorted(teams.items(), key=lambda item: (item[1]['points'], item[1]['goals_balance'], item[1]['goals_scored']), reverse=True)}
 
 
 def get(user_id, match_id):

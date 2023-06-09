@@ -20,6 +20,7 @@ from models.blocklist import BlocklistModel
 from tasks import example1
 
 from flask_apscheduler import APScheduler
+from get_matches import matches
 
 
 def create_app(db_url=None):
@@ -39,7 +40,7 @@ def create_app(db_url=None):
     #     repeat=10
     #     )
     scheduler = APScheduler()
-    scheduler.add_job(id = 'Description of cron job', func = example1, trigger = 'interval', seconds = 6000)
+    scheduler.add_job(id = 'Description of cron job', func = matches, trigger = 'interval', seconds = 10)
     scheduler.start()
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
