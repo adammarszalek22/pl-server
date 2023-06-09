@@ -19,6 +19,9 @@ from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
 from tasks import example
 
+from flask import Flask, request
+from flask_apscheduler import APScheduler
+
 
 def create_app(db_url=None):
     app = Flask(__name__)
@@ -36,6 +39,10 @@ def create_app(db_url=None):
     #     interval=10,
     #     repeat=10
     #     )
+    scheduler = APScheduler()
+    scheduler.app_job(id = 'Description of cron job', func = example, trigger = 'interval', seconds = 10)
+    scheduler.start()
+    app.run()
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"

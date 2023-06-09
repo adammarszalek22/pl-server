@@ -13,3 +13,4 @@ rq
 redis
 rq-scheduler
 datetime
+flask_apschedule
