@@ -17,22 +17,21 @@ from db import db
 from resources.user import blp as UserBlueprint
 from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
-from tasks import example
+from tasks import example1
 
-from flask import Flask, request
 from flask_apscheduler import APScheduler
 
 
 def create_app(db_url=None):
     app = Flask(__name__)
     load_dotenv()
-    # connection = redis.from_url(
-    #     os.getenv("REDIS_URL")
-    # )
-    # #app.queue = Queue("example", connection=connection)
-    # #app.scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
+    connection = redis.from_url(
+        os.getenv("REDIS_URL")
+    )
+    app.queue = Queue("example", connection=connection)
+    # app.scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
     # scheduler = Scheduler('example', connection=connection)
-    # #scheduler.enqueue_in(timedelta(seconds=10), example)
+    # scheduler.enqueue_in(timedelta(seconds=10), example)
     # scheduler.schedule(
     #     scheduled_time=datetime.utcnow(),
     #     func=example,
@@ -40,7 +39,7 @@ def create_app(db_url=None):
     #     repeat=10
     #     )
     scheduler = APScheduler()
-    scheduler.add_job(id = 'Description of cron job', func = example, trigger = 'interval', seconds = 10)
+    scheduler.add_job(id = 'Description of cron job', func = example1, trigger = 'interval', seconds = 6000)
     scheduler.start()
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"

@@ -14,16 +14,7 @@ from rq_scheduler import Scheduler
 load_dotenv()
 
 def example():
-    print("Just seeing how this works.", file=sys.stderr)
+    print("Successfully logged in", file=sys.stderr)
 
-connection = redis.from_url(
-            os.getenv("REDIS_URL")
-)
-scheduler = Scheduler('example', connection=connection)
-#scheduler.enqueue_in(timedelta(seconds=10), example)
-scheduler.schedule(
-    scheduled_time=datetime.utcnow(),
-    func=example,
-    interval=10,
-    repeat=10
-    )
+def example1():
+    pass
