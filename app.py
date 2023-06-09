@@ -39,9 +39,9 @@ def create_app(db_url=None):
     #     interval=10,
     #     repeat=10
     #     )
-    scheduler = APScheduler()
-    scheduler.add_job(id = 'Description of cron job', func = matches, trigger = 'interval', seconds = 10)
-    scheduler.start()
+    #scheduler = APScheduler()
+    #scheduler.add_job(id = 'Description of cron job', func = example1, trigger = 'interval', seconds = 10)
+    #scheduler.start()
     app.config["API_TITLE"] = "Stores REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"
