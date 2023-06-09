@@ -11,11 +11,13 @@ def get(url):
     response = requests.get(url)
     return json.loads(response.content)
 
-url = 'https://fantasy.premierleague.com/api/fixtures/'
 
-response = get(url)
 
 def matches():
+
+    url = 'https://fantasy.premierleague.com/api/fixtures/'
+
+    response = get(url)
 
     for i in response:
 

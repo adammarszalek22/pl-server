@@ -19,8 +19,8 @@ from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
 from tasks import example1
 
-from flask_apscheduler import APScheduler
-from get_matches import matches
+#from flask_apscheduler import APScheduler
+#from get_matches import matches
 
 
 def create_app(db_url=None):
