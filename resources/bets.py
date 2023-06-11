@@ -5,7 +5,7 @@ from passlib.hash import pbkdf2_sha256
 from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
-from models import BetsModel, BlocklistModel
+from models import BetsModel
 from schemas import BetsSchema, PlainBetsSchema, BetsUpdateSchema
 
 blp = Blueprint("Bets", "bets", description="Operations on bets")
@@ -28,26 +28,6 @@ class Bet(MethodView):
         db.session.delete(bet)
         db.session.commit()
         return {"message": "Bet deleted."}
-    '''
-    @jwt_required()
-    @blp.arguments(BetsUpdateSchema)
-    @blp.response(200, BetsSchema)
-    def put(self, bet_data, bet_id):
-        bet = BetsModel.query.get(bet_id)
-        id = get_jwt()["sub"]
-        if id == bet_data["user_id"]:
-            if bet:
-                bet.goal1 = bet_data["goal1"]
-                bet.goal2 = bet_data["goal2"]
-                db.session.add(bet)
-                db.session.commit()
-            else:
-                abort(404, message="Bet not found.")
-        else:
-            abort(401, message="Cannot update other users\' bets.")
-
-        return bet
-    '''
 
 @blp.route("/bet")
 class BetList(MethodView):

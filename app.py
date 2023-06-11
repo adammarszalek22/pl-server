@@ -1,5 +1,7 @@
 import os
 import redis
+import requests
+import json
 
 from flask import Flask, jsonify
 from flask_migrate import Migrate
@@ -8,31 +10,16 @@ from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from rq import Queue
-from rq_scheduler import Scheduler
-from datetime import datetime
-
-import models
 
 from db import db
 from resources.user import blp as UserBlueprint
 from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
+from db import db
+from models import MatchesModel
 from tasks import example
 
 from flask_apscheduler import APScheduler
-#from get_matches import matches
-
-import requests
-import json
-from db import db
-from models import MatchesModel
-import pytest
-
-'''
-IN PROGRESS. THIS IS NOT IN THE FLASK APP FOR NOW.
-'''
-
-
 
 
 def create_app(db_url=None):
@@ -42,15 +29,6 @@ def create_app(db_url=None):
         os.getenv("REDIS_URL")
     )
     app.queue = Queue("example", connection=connection)
-    # app.scheduler = Scheduler(queue = app.queue, connection = app.queue.connection)
-    # scheduler = Scheduler('example', connection=connection)
-    # scheduler.enqueue_in(timedelta(seconds=10), example)
-    # scheduler.schedule(
-    #     scheduled_time=datetime.utcnow(),
-    #     func=example,
-    #     interval=10,
-    #     repeat=10
-    #     )
     
     def matches():
         with app.app_context():
@@ -74,12 +52,11 @@ def create_app(db_url=None):
     scheduler = APScheduler()
     scheduler.add_job(id = 'Updating matches', func = matches, trigger = 'interval', seconds = 120000) # not needed for now, use 120s when needed
     scheduler.start()
+
     app.config["API_TITLE"] = "Premier League REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"
     app.config["OPENAPI_URL_PREFIX"] = "/"
-    #app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
-    #app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL", "sqlite:///data.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["PROPAGATE_EXCEPTIONS"] = True
@@ -159,11 +136,6 @@ def create_app(db_url=None):
     
     with app.app_context():
         db.create_all()
-    
-    
-    
-
-        
     
     api.register_blueprint(UserBlueprint)
     api.register_blueprint(BetsBlueprint)
