@@ -72,7 +72,7 @@ def create_app(db_url=None):
                         db.session.commit()
             print('done')
     scheduler = APScheduler()
-    scheduler.add_job(id = 'Updating matches', func = matches, trigger = 'interval', seconds = 120)
+    scheduler.add_job(id = 'Updating matches', func = matches, trigger = 'interval', seconds = 120000) # not needed for now, use 120s when needed
     scheduler.start()
     app.config["API_TITLE"] = "Premier League REST API"
     app.config["API_VERSION"] = "v1"
