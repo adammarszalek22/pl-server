@@ -17,10 +17,22 @@ from db import db
 from resources.user import blp as UserBlueprint
 from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
-from tasks import example1
+from tasks import example
 
-#from flask_apscheduler import APScheduler
+from flask_apscheduler import APScheduler
 #from get_matches import matches
+
+import requests
+import json
+from db import db
+from models import MatchesModel
+import pytest
+
+'''
+IN PROGRESS. THIS IS NOT IN THE FLASK APP FOR NOW.
+'''
+
+
 
 
 def create_app(db_url=None):
@@ -39,18 +51,39 @@ def create_app(db_url=None):
     #     interval=10,
     #     repeat=10
     #     )
-    #scheduler = APScheduler()
-    #scheduler.add_job(id = 'Description of cron job', func = example1, trigger = 'interval', seconds = 10)
-    #scheduler.start()
-    app.config["API_TITLE"] = "Stores REST API"
+    
+    def matches():
+        with app.app_context():
+            url = 'https://fantasy.premierleague.com/api/fixtures/'
+            response = json.loads(requests.get(url).content)
+            for i in response:
+                if MatchesModel.query.filter(MatchesModel.match_id == str(i["code"])).first():
+                    print('exists')
+                else:
+                    if i["finished"] == True:
+                        print('finished')
+                        match = MatchesModel(
+                            match_id = i["code"],
+                            goal1 = i["team_h_score"],
+                            goal2 = i["team_a_score"],
+                            done = "no"
+                        )
+                        db.session.add(match)
+                        db.session.commit()
+            print('done')
+    scheduler = APScheduler()
+    scheduler.add_job(id = 'Updating matches', func = matches, trigger = 'interval', seconds = 120)
+    scheduler.start()
+    app.config["API_TITLE"] = "Premier League REST API"
     app.config["API_VERSION"] = "v1"
     app.config["OPENAPI_VERSION"] = "3.0.3"
     app.config["OPENAPI_URL_PREFIX"] = "/"
-    app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
-    app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
+    #app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
+    #app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL", "sqlite:///data.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["PROPAGATE_EXCEPTIONS"] = True
+
     db.init_app(app)
     migrate = Migrate(app, db)
     api = Api(app)
@@ -126,6 +159,10 @@ def create_app(db_url=None):
     
     with app.app_context():
         db.create_all()
+    
+    
+    
+
         
     
     api.register_blueprint(UserBlueprint)
