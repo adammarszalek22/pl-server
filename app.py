@@ -16,8 +16,7 @@ from resources.user import blp as UserBlueprint
 from resources.bets import blp as BetsBlueprint
 from models.blocklist import BlocklistModel
 from db import db
-from models import MatchesModel
-from tasks import example
+from models import MatchesModel, UserModel
 
 from flask_apscheduler import APScheduler
 
@@ -29,8 +28,9 @@ def create_app(db_url=None):
         os.getenv("REDIS_URL")
     )
     app.queue = Queue("example", connection=connection)
+    scheduler = APScheduler()
     
-    def matches():
+    def get_matches():
         with app.app_context():
             url = 'https://fantasy.premierleague.com/api/fixtures/'
             response = json.loads(requests.get(url).content)
@@ -49,8 +49,41 @@ def create_app(db_url=None):
                         db.session.add(match)
                         db.session.commit()
             print('done')
-    scheduler = APScheduler()
-    scheduler.add_job(id = 'Updating matches', func = matches, trigger = 'interval', seconds = 120000) # not needed for now, use 120s when needed
+        
+    def compare_guesses():
+        with app.app_context():
+            def compare(a, b, c, d):
+                if a == c and b == d:
+                    return 3
+                elif a > b and c > d:
+                    return 1
+                elif b > a and d > c:
+                    return 1
+                elif a == b and c == d:
+                    return 1
+                else:
+                    return 0
+            users = UserModel.query.all()
+            for user in users:
+                for bet in user.bets:
+                    match = MatchesModel.query.filter(MatchesModel.match_id == bet.match_id).first()
+                    if match and match.done == "no":
+                        points = compare(bet.goal1, bet.goal2, match.goal1, match.goal2)
+                        user.points = user.points + points
+                        match.done = "yes"
+                        db.session.add(user)
+                        db.session.add(match)
+                        db.session.commit()
+            print('DONE')
+    
+    scheduler.add_job(id = 'Updating matches',
+                      func = get_matches,
+                      trigger = 'interval',
+                      seconds = 2000)
+    scheduler.add_job(id = 'Comparing guesses to actual scores',
+                      func = compare_guesses,
+                      trigger = 'interval',
+                      seconds = 3000)
     scheduler.start()
 
     app.config["API_TITLE"] = "Premier League REST API"

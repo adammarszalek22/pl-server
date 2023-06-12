@@ -117,14 +117,19 @@ class User(MethodView):
         else:
             abort(401, message="Unauthorised")
 
+@blp.route('/delete')
+class UserDelete(MethodView):
     @jwt_required(fresh=True)
-    def delete(self, user_id):
-        id = get_jwt()['sub']
-        if id == user_id:
-            user = UserModel.query.get_or_404(user_id)
-            db.session.delete(user)
+    def delete(self):
+        # Delete all bets first
+        user_id = get_jwt()['sub']
+        user = UserModel.query.filter(UserModel.id == user_id).first()
+        for bet in user.bets:
+            db.session.delete(bet)
             db.session.commit()
-            return {'message': 'User deleted.'}, 200
-        else:
-            return {'message': 'You cannot delete other users\' accounts'}
+
+        user = UserModel.query.get_or_404(user_id)
+        db.session.delete(user)
+        db.session.commit()
+        return {'message': 'User deleted.'}
     
