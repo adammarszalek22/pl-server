@@ -80,11 +80,11 @@ def create_app(db_url=None):
     scheduler.add_job(id = 'Updating matches',
                       func = get_matches,
                       trigger = 'interval',
-                      seconds = 2000)
+                      seconds = 120)
     scheduler.add_job(id = 'Comparing guesses to actual scores',
                       func = compare_guesses,
                       trigger = 'interval',
-                      seconds = 3000)
+                      seconds = 150)
     scheduler.start()
 
     app.config["API_TITLE"] = "Premier League REST API"
