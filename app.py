@@ -33,7 +33,8 @@ def create_app(db_url=None):
     def get_matches():
         with app.app_context():
             url = 'https://fantasy.premierleague.com/api/fixtures/'
-            response = json.loads(requests.get(url).content)
+            request = requests.get(url)
+            response = json.loads(request.content)
             for i in response:
                 if MatchesModel.query.filter(MatchesModel.match_id == str(i["code"])).first():
                     print('exists')
