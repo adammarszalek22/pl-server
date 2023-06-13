@@ -13,7 +13,6 @@ from schemas import PlainUserSchema, UserSchema, UserUpdateSchema, AllUserSchema
 blp = Blueprint('Users', 'users', description='Operations on users')
 
 
-
 @blp.route('/register')
 class UserRegister(MethodView):
     @blp.arguments(UserSchema)
@@ -35,7 +34,6 @@ class UserRegister(MethodView):
         return {'message': 'User created successfully.', "code": 201}
 
 
-
 @blp.route('/login')
 class UserLogin(MethodView):
     @blp.arguments(PlainUserSchema)
@@ -54,6 +52,7 @@ class UserLogin(MethodView):
             abort(401, message='User not found')
         else:
             abort(401, message='Wrong password')
+
 
 @blp.route('/update/<int:user_id>')
 class UpdateInfo(MethodView):
@@ -79,6 +78,7 @@ class UpdateInfo(MethodView):
 
 @blp.route('/get_all')
 class GetUsers(MethodView):
+    # Anyone who is logged in can view all users info (points, etc. NO PASSWORD)
     @jwt_required()
     @blp.response(200, AllUserSchema(many=True))
     def get(self):
@@ -87,6 +87,7 @@ class GetUsers(MethodView):
         
 @blp.route('/refresh')
 class TokenRefresh(MethodView):
+    # Getting a non-fresh token (do not let delete account with non-fresh token)
     @jwt_required(refresh=True)
     def post(self):
         current_user = get_jwt_identity()

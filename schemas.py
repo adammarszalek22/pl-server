@@ -42,6 +42,13 @@ class BetsUpdateSchema(Schema):
     user_id = fields.Int(required=True, load_only=True)
     user = fields.Nested(PlainUserSchema(), dump_only=True)
 
+class MatchesSchema(Schema):
+    id = fields.Int(dump_only = True)
+    match = fields.Str(required=True)
+    goal1 = fields.Int()
+    goal2 = fields.Int()
+    done = fields.Str(required=True)
+
 
 
 
