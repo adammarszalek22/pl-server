@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
 from models import BetsModel, UserModel
-from schemas import BetsSchema, PlainBetsSchema, BetsUpdateSchema
+from schemas import BetsSchema
 
 blp = Blueprint("Bets", "bets", description="Operations on bets")
 
@@ -78,7 +78,7 @@ class BetList(MethodView):
         return bet
 
     @jwt_required()
-    @blp.arguments(BetsUpdateSchema)
+    @blp.arguments(BetsSchema)
     @blp.response(200, BetsSchema)
     def put(self, bet_data):
         # Users can update their own bets
@@ -90,6 +90,7 @@ class BetList(MethodView):
             if bet:
                 bet.goal1 = bet_data["goal1"]
                 bet.goal2 = bet_data["goal2"]
+                bet.done = bet_data["done"]
                 db.session.add(bet)
                 db.session.commit()
             else:

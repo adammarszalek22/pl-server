@@ -14,3 +14,4 @@ class UserModel(db.Model):
     one_pointers = db.Column(db.Integer)
 
     bets = db.relationship("BetsModel", back_populates="user", lazy="dynamic")
+    groups = db.relationship("GroupsModel", back_populates="user", lazy="dynamic", secondary="users_groups")

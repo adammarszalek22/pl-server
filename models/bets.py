@@ -8,6 +8,7 @@ class BetsModel(db.Model):
     match_id = db.Column(db.String(80))
     goal1 = db.Column(db.Integer)
     goal2 = db.Column(db.Integer)
-
+    done = db.Column(db.String(10))
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=False, nullable=False)
+    
     user = db.relationship("UserModel", back_populates="bets")

@@ -15,6 +15,7 @@ from db import db
 from resources.user import blp as UserBlueprint
 from resources.bets import blp as BetsBlueprint
 from resources.matches import blp as MatchesBlueprint
+from resources.groups import blp as GroupsBlueprint
 from models.blocklist import BlocklistModel
 from db import db
 from models import MatchesModel, UserModel
@@ -29,65 +30,63 @@ def create_app(db_url=None):
         os.getenv("REDIS_URL")
     )
     app.queue = Queue("example", connection=connection)
-    # scheduler = APScheduler()
+    scheduler = APScheduler()
     
-    # def get_matches():
-    #     with app.app_context():
-    #         url = 'https://fantasy.premierleague.com/api/fixtures/'
-    #         request = requests.get(url)
-    #         response = json.loads(request.content)
-    #         for i in response:
-    #             if MatchesModel.query.filter(MatchesModel.match_id == str(i["code"])).first():
-    #                 pass
-    #             else:
-    #                 if i["finished"] == True:
-    #                     print('finished')
-    #                     match = MatchesModel(
-    #                         match_id = i["code"],
-    #                         goal1 = i["team_h_score"],
-    #                         goal2 = i["team_a_score"],
-    #                         done = "no"
-    #                     )
-    #                     db.session.add(match)
-    #                     db.session.commit()
-    #         print(MatchesModel.query.all())
-    #         print('done')
+    def get_matches():
+        with app.app_context():
+            url = 'https://fantasy.premierleague.com/api/fixtures/'
+            request = requests.get(url)
+            response = json.loads(request.content)
+            for i in response:
+                if MatchesModel.query.filter(MatchesModel.match_id == str(i["code"])).first():
+                    pass
+                else:
+                    if i["finished"] == True:
+                        print('finished')
+                        match = MatchesModel(
+                            match_id = i["code"],
+                            goal1 = i["team_h_score"],
+                            goal2 = i["team_a_score"]
+                        )
+                        db.session.add(match)
+                        db.session.commit()
+            print(MatchesModel.query.all())
+            print('done')
         
-    # def compare_guesses():
-    #     with app.app_context():
-    #         def compare(a, b, c, d):
-    #             if a == c and b == d:
-    #                 return 3
-    #             elif a > b and c > d:
-    #                 return 1
-    #             elif b > a and d > c:
-    #                 return 1
-    #             elif a == b and c == d:
-    #                 return 1
-    #             else:
-    #                 return 0
-    #         users = UserModel.query.all()
-    #         for user in users:
-    #             for bet in user.bets:
-    #                 match = MatchesModel.query.filter(MatchesModel.match_id == bet.match_id).first()
-    #                 if match and match.done == "no":
-    #                     points = compare(bet.goal1, bet.goal2, match.goal1, match.goal2)
-    #                     user.points = user.points + points
-    #                     match.done = "yes"
-    #                     db.session.add(user)
-    #                     db.session.add(match)
-    #                     db.session.commit()
-    #         print('DONE')
+    def compare_guesses():
+        with app.app_context():
+            def compare(a, b, c, d):
+                if a == c and b == d:
+                    return 3
+                elif a > b and c > d:
+                    return 1
+                elif b > a and d > c:
+                    return 1
+                elif a == b and c == d:
+                    return 1
+                else:
+                    return 0
+            users = UserModel.query.all()
+            for user in users:
+                for bet in user.bets:
+                    match = MatchesModel.query.filter(MatchesModel.match_id == bet.match_id).first()
+                    if match and bet.done == "no":
+                        points = compare(bet.goal1, bet.goal2, match.goal1, match.goal2)
+                        user.points = user.points + points
+                        bet.done = "yes"
+                        db.session.add(user)
+                        db.session.commit()
+            print('DONE')
     
-    # scheduler.add_job(id = 'Updating matches',
-    #                   func = get_matches,
-    #                   trigger = 'interval',
-    #                   seconds = 100)
-    # scheduler.add_job(id = 'Comparing guesses to actual scores',
-    #                   func = compare_guesses,
-    #                   trigger = 'interval',
-    #                   seconds = 120)
-    # scheduler.start()
+    scheduler.add_job(id = 'Updating matches',
+                      func = get_matches,
+                      trigger = 'interval',
+                      seconds = 100)
+    scheduler.add_job(id = 'Comparing guesses to actual scores',
+                      func = compare_guesses,
+                      trigger = 'interval',
+                      seconds = 120)
+    scheduler.start()
 
     app.config["API_TITLE"] = "Premier League REST API"
     app.config["API_VERSION"] = "v1"
@@ -176,5 +175,6 @@ def create_app(db_url=None):
     api.register_blueprint(UserBlueprint)
     api.register_blueprint(BetsBlueprint)
     api.register_blueprint(MatchesBlueprint)
+    api.register_blueprint(GroupsBlueprint)
 
     return app
