@@ -69,19 +69,25 @@ Groups
 class CreateGroupsSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
-    user_id = fields.Int(required=True, load_only=True)
-    user = fields.Nested(PlainUserSchema(), dump_only = True)
+    user = fields.List(fields.Nested(PlainUserSchema()), dump_only = True)
 
 class GetGroupsSchema(Schema):
     id = fields.Int(required=True)
     name = fields.Str(dump_only=True)
+    admin_id = fields.Int(dump_only=True)
     user = fields.List(fields.Nested(PlainUserSchema()), dump_only = True)
 
 class JoinGroupsSchema(Schema):
     id = fields.Int(required=True)
     name = fields.Str(dump_only=True)
-    user_id = fields.Str(required=True, load_only=True)
     user = fields.List(fields.Nested(PlainUserSchema()), dump_only = True)
+
+class DeleteGroupSchema(Schema):
+    id = fields.Int(required=True, load_only=True)
+
+class DeleteUserFromGroup(Schema):
+    id = fields.Int(required=True)
+    user_id = fields.Int(required=True)
 
 
 
