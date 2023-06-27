@@ -6,7 +6,8 @@ from passlib.hash import pbkdf2_sha256
 
 from db import db
 from models import GroupsModel, UserModel, UsersGroups
-from schemas import GetGroupsSchema, CreateGroupsSchema, JoinGroupsSchema, DeleteGroupSchema, PlainUserSchema, DeleteUserFromGroup
+from schemas import GetGroupsSchema, CreateGroupsSchema, JoinGroupsSchema
+from schemas import DeleteGroupSchema, PlainUserSchema, DeleteUserFromGroup, MyGroupSchema
 
 blp = Blueprint("Groups", "groups", description = "User's groups")
 
@@ -55,6 +56,46 @@ class AllGroups(MethodView):
         else:
             abort(401, message="Unauthorized - wrong password")
 
+@blp.route('/my_groups')
+class MyGroup(MethodView):
+
+    @jwt_required()
+    @blp.response(200, GetGroupsSchema(many=True))
+    def get(self):
+        
+        user_id = get_jwt_identity()
+
+        groups = GroupsModel.query.filter(
+            GroupsModel.admin_id == user_id
+        ).all()
+
+        return groups
+    
+@blp.route('/groups_im_in')
+class MyGroup(MethodView):
+
+    @jwt_required()
+    @blp.response(200, GetGroupsSchema(many=True))
+    def get(self):
+        
+        user_id = get_jwt_identity()
+
+        users_groups = UsersGroups.query.filter(
+            UsersGroups.user_id == user_id
+        ).all()
+
+        group_ids = []
+        for row in users_groups:
+            group_ids.append(row.group_id)
+        group_ids = tuple(group_ids)
+
+
+        groups = GroupsModel.query.filter(
+            GroupsModel.id.in_(group_ids),
+            GroupsModel.admin_id != user_id
+        ).all()
+
+        return groups
 
 @blp.route("/groups")
 class Group(MethodView):
@@ -95,7 +136,7 @@ class Group(MethodView):
     # Anyone who has group id can join the group
     @jwt_required()
     @blp.arguments(JoinGroupsSchema)
-    @blp.response(201, JoinGroupsSchema)
+    @blp.response(200, JoinGroupsSchema)
     def put(self, group_data):
 
         user_id = get_jwt_identity()
@@ -104,9 +145,9 @@ class Group(MethodView):
         user = UserModel.query.get_or_404(user_id)
 
         users_groups = UsersGroups.query.filter(
-            UsersGroups.user_id == user.id and
-            UsersGroups.groups_id == group.id
-        )
+            UsersGroups.user_id == user.id,
+            UsersGroups.group_id == group.id
+        ).first()
 
         if users_groups:
             abort(409, message="The user is already in the group")

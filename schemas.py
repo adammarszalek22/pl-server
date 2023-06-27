@@ -89,6 +89,10 @@ class DeleteUserFromGroup(Schema):
     id = fields.Int(required=True)
     user_id = fields.Int(required=True)
 
+class MyGroupSchema(Schema):
+    user_id = fields.Int(required=True)
+    
+
 
 
     
