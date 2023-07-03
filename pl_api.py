@@ -75,60 +75,12 @@ for i in response_1:
 
         teams[i['team_h']]['goals_balance'] += i['team_h_score'] - i['team_a_score']
         teams[i['team_a']]['goals_balance'] += i['team_a_score'] - i['team_h_score']
+
+print(teams)
     
 positions = {k: v for k, v in sorted(teams.items(), key=lambda item: (item[1]['points'], item[1]['goals_balance'], item[1]['goals_scored']), reverse=True)}
 
-
-def get(user_id, match_id):
-    #Retrieves the bets from database
-    bet = BetsModel.query.filter(
-        BetsModel.user_id == user_id,
-        BetsModel.match_id == match_id
-    ).first()
-    return bet
-
-def compare1(gameweek, match_id, user_id):
-    #Compares bets and actual scores
-    db_bet = get(user_id, match_id)
-    score1 = matches['Gameweek ' + str(gameweek)][match_id]['goals1']
-    score2 = matches['Gameweek ' + str(gameweek)][match_id]['goals2']
-    if db_bet:
-        print(score1, score2, db_bet.goal1, db_bet.goal2)
-    try:
-        if db_bet.goal1 == score1 and db_bet.goal2 == score2:
-            return 3
-        elif score1 > score2 and db_bet.goal1 > db_bet.goal2:
-            return 1
-        elif score1 == score2 and db_bet.goal1 == db_bet.goal2:
-            return 1
-        elif score1 < score2 and db_bet.goal1 < db_bet.goal2:
-            return 1
-        else:
-            return 0
-    except AttributeError:
-        return 0
-
-def add_points(user_id, points):
-    #Adds points to users account
-    user = UserModel.query.filter(
-        UserModel.id == user_id
-    ).first()
-    user.points = points
-    print(points, 'added')
-    db.session.add(user)
-    db.session.commit()
-
-def compare(user_id=1):
-    points = 0
-    for i in range(1, 39):
-        for i2 in matches['Gameweek ' + str(i)].keys():
-            a = int(compare1(i, i2, 1))
-            points += a
-    add_points(user_id, points)
-
-
-
-    
+print(positions)
 
 
 

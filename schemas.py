@@ -44,6 +44,14 @@ class BetsSchema(PlainBetsSchema):
     user_id = fields.Int(required=True, load_only=True)
     user = fields.Nested(PlainUserSchema(), dump_only=True)
 
+class MultipleUpdateBetsSchema(Schema):
+    id = fields.Int(dump_only = True)
+    match_id = fields.List(fields.Str(), required=True)
+    goal1 = fields.List(fields.Int(), required=True)
+    goal2 = fields.List(fields.Int(), required=True)
+    user_id = fields.Int(required=True, load_only=True)
+    user = fields.Nested(PlainUserSchema(), dump_only=True)
+
 # class BetsUpdateSchema(Schema):
 #     match_id = fields.Str(required=True)
 #     goal1 = fields.Int(required=True)

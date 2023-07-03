@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
 from models import BetsModel, UserModel
-from schemas import BetsSchema
+from schemas import BetsSchema, MultipleUpdateBetsSchema
 
 blp = Blueprint("Bets", "bets", description="Operations on bets")
 
@@ -58,12 +58,16 @@ class BetList(MethodView):
     @blp.arguments(BetsSchema)
     @blp.response(201, BetsSchema)
     def post(self, bet_data):
+
         bet = BetsModel(**bet_data)
-        id = get_jwt()['sub']
+
+        user_id = get_jwt()['sub']
+
         another_bet = BetsModel.query.filter(
             BetsModel.match_id == bet_data["match_id"],
-            BetsModel.user_id == id
+            BetsModel.user_id == user_id
         ).first()
+
         if bet_data["user_id"] == id:
             if another_bet:
                 abort(500, message="Bet already exists")
@@ -82,11 +86,14 @@ class BetList(MethodView):
     @blp.response(200, BetsSchema)
     def put(self, bet_data):
         # Users can update their own bets
+        user_id = get_jwt_identity()
+
         bet = BetsModel.query.filter(
-            BetsModel.match_id == bet_data["match_id"]
+            BetsModel.match_id == bet_data["match_id"],
+            BetsModel.user_id == user_id
         ).first()
-        id = get_jwt()["sub"]
-        if id == bet_data["user_id"]:
+
+        if user_id == bet_data["user_id"]:
             if bet:
                 bet.goal1 = bet_data["goal1"]
                 bet.goal2 = bet_data["goal2"]
@@ -100,3 +107,57 @@ class BetList(MethodView):
         else:
             abort(401, message="Cannot update other users\' bets.")
         return bet
+
+@blp.route("/bet_by_user_id")
+class BetList(MethodView):
+    
+    # Anyone who is logged in can get all their bets
+    @jwt_required()
+    @blp.response(200, BetsSchema(many=True))
+    def get(self):
+        user_id = get_jwt_identity()
+        return BetsModel.query.filter(
+            BetsModel.user_id == user_id
+        ).all()
+
+@blp.route("/multiple_bets_update")
+class BetList(MethodView):
+
+    @jwt_required()
+    @blp.arguments(MultipleUpdateBetsSchema)
+    @blp.response(200, MultipleUpdateBetsSchema)
+    def put(self, bet_data):
+        # Users can update their own bets
+        user_id = get_jwt_identity()
+
+        all_bets = []
+
+        if user_id == bet_data["user_id"]:
+
+            i = -1
+            for code in bet_data["match_id"]:
+                i += 1
+                now_bet = BetsModel.query.filter(
+                    BetsModel.match_id == code,
+                    BetsModel.user_id == user_id
+                ).first()
+                if now_bet:
+                    now_bet.goal1 = bet_data["goal1"][i]
+                    now_bet.goal2 = bet_data["goal2"][i]
+                    now_bet.done = 'no'
+                    all_bets.append(now_bet)
+                    db.session.add(now_bet)
+                    db.session.commit()
+                else:
+                    new_bet = BetsModel()
+                    new_bet.user_id = user_id
+                    new_bet.match_id = code
+                    new_bet.goal1 = bet_data["goal1"][i]
+                    new_bet.goal2 = bet_data["goal2"][i]
+                    new_bet.done = 'no'
+                    all_bets.append(new_bet)
+                    db.session.add(new_bet)
+                    db.session.commit()
+        else:
+            abort(401, message="Cannot update other users\' bets.")
+        return all_bets
