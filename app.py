@@ -18,7 +18,7 @@ from resources.matches import blp as MatchesBlueprint
 from resources.groups import blp as GroupsBlueprint
 from models.blocklist import BlocklistModel
 from db import db
-from models import MatchesModel, UserModel
+from models import MatchesModel, UserModel, GroupsModel
 
 from flask_apscheduler import APScheduler
 
@@ -84,7 +84,6 @@ def create_app(db_url=None):
         
     def positions():
         with app.app_context():
-            
             teams = {}
             users = UserModel.query.all()
             for user in users:
@@ -103,10 +102,29 @@ def create_app(db_url=None):
             print("Positions done")
             print(positions)
     
+    def groups_positions():
+        with app.app_context():
+            groups = GroupsModel.query.all()
+            for group in groups: 
+                teams = {}
+                for user in group.user:
+                    teams[user.id] = {}
+                    teams[user.id]["points"] = int(user.points)
+                    teams[user.id]["three_pointers"] = int(user.three_pointers)
+                    teams[user.id]["one_pointers"] = int(user.one_pointers)
+                positions = {k: v for k, v in sorted(teams.items(), key=lambda item: (item[1]["points"], item[1]["three_pointers"]), reverse=True)}
+                pos = []
+                for i in positions.keys():
+                    pos.append(i)
+                pos_string = ' '.join(map(str, pos))
+                group.positions = pos_string
+                db.session.add(group)
+                db.session.commit()
+    
     scheduler.add_job(id = 'Updating matches',
-                      func = get_matches,
+                      func = groups_positions,
                       trigger = 'interval',
-                      seconds = 50)
+                      seconds = 10)
     scheduler.start()
 
     app.config["API_TITLE"] = "Premier League REST API"

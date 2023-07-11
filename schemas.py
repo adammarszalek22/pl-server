@@ -17,6 +17,12 @@ class PlainUserSchema(Schema):
 Users
 '''
 
+class GroupUserSchema(PlainUserSchema):
+    points = fields.Int()
+    position = fields.Int()
+    three_pointers = fields.Int()
+    one_pointers = fields.Int()
+
 class UserSchema(PlainUserSchema):
     points = fields.Int()
     position = fields.Int()
@@ -83,7 +89,8 @@ class GetGroupsSchema(Schema):
     id = fields.Int(required=True)
     name = fields.Str(dump_only=True)
     admin_id = fields.Int(dump_only=True)
-    user = fields.List(fields.Nested(PlainUserSchema()), dump_only = True)
+    positions = fields.Str(dump_only=True)
+    user = fields.List(fields.Nested(GroupUserSchema()), dump_only = True)
 
 class JoinGroupsSchema(Schema):
     id = fields.Int(required=True)

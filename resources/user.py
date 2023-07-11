@@ -112,11 +112,11 @@ class User(MethodView):
     @jwt_required()
     def get(self, user_id):
         id = get_jwt()["sub"]
-        if user_id == id:
-            user = UserModel.query.get_or_404(user_id)
-            return user
-        else:
-            abort(401, message="Unauthorised")
+        # if user_id == id:
+        user = UserModel.query.get_or_404(user_id)
+        return user
+        # else:
+        #     abort(401, message="Unauthorised")
 
 @blp.route('/delete')
 class UserDelete(MethodView):
