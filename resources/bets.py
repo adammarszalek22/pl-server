@@ -5,8 +5,9 @@ from passlib.hash import pbkdf2_sha256
 from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
-from models import BetsModel, UserModel
+from models import BetsModel, UserModel, MatchesModel
 from schemas import BetsSchema, MultipleUpdateBetsSchema
+from date_time import convert_to_datetime, has_passed
 
 blp = Blueprint("Bets", "bets", description="Operations on bets")
 
@@ -61,24 +62,28 @@ class BetList(MethodView):
 
         bet = BetsModel(**bet_data)
 
-        user_id = get_jwt()['sub']
+        match_ = MatchesModel.query.filter(
+            MatchesModel.match_id == bet_data["match_id"]
+        ).first()
+
+        if has_passed(convert_to_datetime(match_.start_time)):
+            abort(405, message="Cannot post bet after match has started.")
+
+        user_id = get_jwt_identity()
 
         another_bet = BetsModel.query.filter(
             BetsModel.match_id == bet_data["match_id"],
             BetsModel.user_id == user_id
         ).first()
 
-        if bet_data["user_id"] == id:
-            if another_bet:
-                abort(500, message="Bet already exists")
-            else:
-                try:
-                    db.session.add(bet)
-                    db.session.commit()
-                except SQLAlchemyError:
-                    abort(500, message="An error occurred while inserting the bet.")  
+        if another_bet:
+            abort(500, message="Bet already exists")
         else:
-            abort(401, message="Cannot post bets for other users")
+            try:
+                db.session.add(bet)
+                db.session.commit()
+            except SQLAlchemyError:
+                abort(500, message="An error occurred while inserting the bet.")
         return bet
 
     @jwt_required()
@@ -88,24 +93,31 @@ class BetList(MethodView):
         # Users can update their own bets
         user_id = get_jwt_identity()
 
+        match_ = MatchesModel.query.filter(
+            MatchesModel.match_id == bet_data["match_id"]
+        ).first()
+
         bet = BetsModel.query.filter(
             BetsModel.match_id == bet_data["match_id"],
             BetsModel.user_id == user_id
         ).first()
 
-        if user_id == bet_data["user_id"]:
-            if bet:
-                bet.goal1 = bet_data["goal1"]
-                bet.goal2 = bet_data["goal2"]
-                bet.done = bet_data["done"]
-                db.session.add(bet)
-                db.session.commit()
-            else:
-                bet = BetsModel(**bet_data)
-                db.session.add(bet)
-                db.session.commit()
+        if has_passed(convert_to_datetime(match_.start_time)):
+            abort(405, message="Cannot update the bet after match has started.")
+
+        if bet:
+            bet.goal1 = bet_data["goal1"]
+            bet.goal2 = bet_data["goal2"]
+            bet.done = bet_data["done"]
+            db.session.add(bet)
+            db.session.commit()
         else:
-            abort(401, message="Cannot update other users\' bets.")
+            bet = BetsModel(**bet_data)
+            if has_passed(convert_to_datetime(match_.start_time)):
+                abort(405, message="Cannot update the bet after match has started.")
+            db.session.add(bet)
+            db.session.commit()
+
         return bet
 
 @blp.route("/bet_by_user_id")
@@ -132,32 +144,34 @@ class BetList(MethodView):
 
         all_bets = []
 
-        if user_id == bet_data["user_id"]:
-
-            i = -1
-            for code in bet_data["match_id"]:
-                i += 1
-                now_bet = BetsModel.query.filter(
-                    BetsModel.match_id == code,
-                    BetsModel.user_id == user_id
+        i = -1
+        for code in bet_data["match_id"]:
+            i += 1
+            now_bet = BetsModel.query.filter(
+                BetsModel.match_id == code,
+                BetsModel.user_id == user_id
+            ).first()
+            match_ = MatchesModel.query.filter(
+                MatchesModel.match_id == code
                 ).first()
-                if now_bet:
-                    now_bet.goal1 = bet_data["goal1"][i]
-                    now_bet.goal2 = bet_data["goal2"][i]
-                    now_bet.done = 'no'
-                    all_bets.append(now_bet)
-                    db.session.add(now_bet)
-                    db.session.commit()
-                else:
-                    new_bet = BetsModel()
-                    new_bet.user_id = user_id
-                    new_bet.match_id = code
-                    new_bet.goal1 = bet_data["goal1"][i]
-                    new_bet.goal2 = bet_data["goal2"][i]
-                    new_bet.done = 'no'
-                    all_bets.append(new_bet)
-                    db.session.add(new_bet)
-                    db.session.commit()
-        else:
-            abort(401, message="Cannot update other users\' bets.")
+            if has_passed(convert_to_datetime(match_.start_time)):
+                abort(405, message="Cannot update the bet after match has started.")
+            if now_bet:
+                now_bet.goal1 = bet_data["goal1"][i]
+                now_bet.goal2 = bet_data["goal2"][i]
+                now_bet.done = 'no'
+                all_bets.append(now_bet)
+                db.session.add(now_bet)
+                db.session.commit()
+            else:
+                new_bet = BetsModel()
+                new_bet.user_id = user_id
+                new_bet.match_id = code
+                new_bet.goal1 = bet_data["goal1"][i]
+                new_bet.goal2 = bet_data["goal2"][i]
+                new_bet.done = 'no'
+                all_bets.append(new_bet)
+                db.session.add(new_bet)
+                db.session.commit()
+
         return all_bets

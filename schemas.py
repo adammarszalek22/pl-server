@@ -30,6 +30,13 @@ class UserSchema(PlainUserSchema):
     one_pointers = fields.Int()
     bets = fields.List(fields.Nested(PlainBetsSchema(), dump_only=True))
 
+class UsernameSchema(Schema):
+    username = fields.Str(required=True)
+    points = fields.Int(dump_only=True)
+    position = fields.Int(dump_only=True)
+    three_pointers = fields.Int(dump_only=True)
+    one_pointers = fields.Int(dump_only=True)
+
 class AllUserSchema(PlainUserSchema):
     points = fields.Int()
     position = fields.Int()
@@ -47,7 +54,7 @@ Bets
 '''
 
 class BetsSchema(PlainBetsSchema):
-    user_id = fields.Int(required=True, load_only=True)
+    #user_id = fields.Int(required=True, load_only=True)
     user = fields.Nested(PlainUserSchema(), dump_only=True)
 
 class MultipleUpdateBetsSchema(Schema):
@@ -55,7 +62,6 @@ class MultipleUpdateBetsSchema(Schema):
     match_id = fields.List(fields.Str(), required=True)
     goal1 = fields.List(fields.Int(), required=True)
     goal2 = fields.List(fields.Int(), required=True)
-    user_id = fields.Int(required=True, load_only=True)
     user = fields.Nested(PlainUserSchema(), dump_only=True)
 
 # class BetsUpdateSchema(Schema):

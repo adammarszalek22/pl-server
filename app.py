@@ -19,6 +19,7 @@ from resources.groups import blp as GroupsBlueprint
 from models.blocklist import BlocklistModel
 from db import db
 from models import MatchesModel, UserModel, GroupsModel
+from date_time import convert_to_datetime, has_passed
 
 from flask_apscheduler import APScheduler
 
@@ -30,7 +31,10 @@ def create_app(db_url=None):
         os.getenv("REDIS_URL")
     )
     app.queue = Queue("example", connection=connection)
+    matches_scheduler = APScheduler()
     scheduler = APScheduler()
+    group_pos_scheduler = APScheduler()
+
     
     def get_matches():
         with app.app_context():
@@ -38,19 +42,25 @@ def create_app(db_url=None):
             request = requests.get(url)
             response = json.loads(request.content)
             for i in response:
-                if MatchesModel.query.filter(MatchesModel.match_id == str(i["code"])).first():
-                    pass
+                match = MatchesModel.query.filter(
+                    MatchesModel.match_id == str(i["code"])
+                    ).first()
+                if match:
+                    match.finished = i["finished"]
+                    db.session.add(match)
+                    db.session.commit()
                 else:
-                    if i["finished"] == True:
-                        match = MatchesModel(
-                            match_id = i["code"],
-                            goal1 = i["team_h_score"],
-                            goal2 = i["team_a_score"]
-                        )
-                        db.session.add(match)
-                        db.session.commit()
+                    match = MatchesModel(
+                        match_id = i["code"],
+                        goal1 = i["team_h_score"],
+                        goal2 = i["team_a_score"],
+                        start_time = i["kickoff_time"],
+                        finished = i["finished"]
+                    )
+                    db.session.add(match)
+                    db.session.commit()
+            print([match1.finished for match1 in MatchesModel.query.all()])
             print('Matches added')
-            compare_guesses()
         
     def compare_guesses():
         with app.app_context():
@@ -69,7 +79,7 @@ def create_app(db_url=None):
             for user in users:
                 for bet in user.bets:
                     match = MatchesModel.query.filter(MatchesModel.match_id == bet.match_id).first()
-                    if match and bet.done == "no":
+                    if match and match.finished == True and bet.done == "no":
                         points = compare(bet.goal1, bet.goal2, match.goal1, match.goal2)
                         user.points += points
                         if points == 3:
@@ -100,7 +110,6 @@ def create_app(db_url=None):
                 db.session.commit()
                 standing += 1
             print("Positions done")
-            print(positions)
     
     def groups_positions():
         with app.app_context():
@@ -121,11 +130,22 @@ def create_app(db_url=None):
                 db.session.add(group)
                 db.session.commit()
     
-    scheduler.add_job(id = 'Updating matches',
+    matches_scheduler.add_job(id = 'Updating matches',
+                      func = get_matches,
+                      trigger = 'interval',
+                      seconds = 120)
+    scheduler.add_job(id = 'Comparing guesses',
+                      func = compare_guesses,
+                      trigger = 'interval',
+                      seconds = 120)
+    group_pos_scheduler.add_job(id = 'Group positions',
                       func = groups_positions,
                       trigger = 'interval',
-                      seconds = 10)
+                      seconds = 120)
+    
+    matches_scheduler.start()
     scheduler.start()
+    group_pos_scheduler.start()
 
     app.config["API_TITLE"] = "Premier League REST API"
     app.config["API_VERSION"] = "v1"

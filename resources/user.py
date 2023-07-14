@@ -7,7 +7,7 @@ from passlib.hash import pbkdf2_sha256
 from db import db
 from tasks import example
 from models import UserModel, BlocklistModel
-from schemas import PlainUserSchema, UserSchema, UserUpdateSchema, AllUserSchema
+from schemas import PlainUserSchema, UserSchema, UserUpdateSchema, AllUserSchema, UsernameSchema
 
 
 blp = Blueprint('Users', 'users', description='Operations on users')
@@ -114,6 +114,21 @@ class User(MethodView):
         id = get_jwt()["sub"]
         # if user_id == id:
         user = UserModel.query.get_or_404(user_id)
+        return user
+        # else:
+        #     abort(401, message="Unauthorised")
+
+@blp.route('/user')
+class User(MethodView):
+    @blp.arguments(UsernameSchema)
+    @blp.response(200, UsernameSchema)
+    @jwt_required()
+    def get(self, user_data):
+        id = get_jwt_identity()
+        # if user_id == id:
+        user = UserModel.query.filter(
+            UserModel.username == user_data["username"]
+        ).first()
         return user
         # else:
         #     abort(401, message="Unauthorised")

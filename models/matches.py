@@ -8,3 +8,5 @@ class MatchesModel(db.Model):
     match_id = db.Column(db.String(80), unique=True)
     goal1 = db.Column(db.Integer)
     goal2 = db.Column(db.Integer)
+    start_time = db.Column(db.String)
+    finished = db.Column(db.Boolean)
