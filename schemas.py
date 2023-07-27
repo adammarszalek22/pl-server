@@ -38,7 +38,6 @@ class UserSchemaByPos(Schema):
     position = fields.Int(required=True)
     three_pointers = fields.Int(dump_only=True)
     one_pointers = fields.Int(dump_only=True)
-    bets = fields.List(fields.Nested(PlainBetsSchema(), dump_only=True))
 
 class UsernameSchema(Schema):
     username = fields.Str(required=True)
