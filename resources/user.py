@@ -138,10 +138,10 @@ class UserPosition(MethodView):
 
     @blp.response(200, UserSchemaByPos)
     @jwt_required()
-    def get(self, position):
+    def get(self, data):
 
         user = UserModel.query.filter(
-            UserModel.position == position
+            UserModel.position == data["position"]
         ).first()
 
         return user
