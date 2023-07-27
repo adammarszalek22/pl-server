@@ -136,6 +136,7 @@ class User(MethodView):
 @blp.route('/user_pos')
 class UserPosition(MethodView):
 
+    @blp.arguments(UserSchemaByPos)
     @blp.response(200, UserSchemaByPos)
     @jwt_required()
     def get(self, data):
