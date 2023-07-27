@@ -11,17 +11,6 @@ from schemas import DeleteGroupSchema, PlainUserSchema, DeleteUserFromGroup, MyG
 
 blp = Blueprint("Groups", "groups", description = "User's groups")
 
-'''
-ADD ERROR HANDLING LATER
-
-POST - create group (and become an admin) and give it a name
-PUT - join group with your user id and group unique id
-GET - get unique id to share with others (so that they can join)
-GET_ALL
-DELETE
-DELETE_ALL - for me ONLY
-'''
-
 
 @blp.route("/all_groups")
 class AllGroups(MethodView):

@@ -25,6 +25,7 @@ from flask_apscheduler import APScheduler
 
 
 def create_app(db_url=None):
+    
     app = Flask(__name__)
     load_dotenv()
     connection = redis.from_url(

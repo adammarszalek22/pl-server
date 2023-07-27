@@ -7,7 +7,7 @@ from passlib.hash import pbkdf2_sha256
 from db import db
 from tasks import example
 from models import UserModel, BlocklistModel
-from schemas import PlainUserSchema, UserSchema, UserUpdateSchema, AllUserSchema, UsernameSchema
+from schemas import PlainUserSchema, UserSchema, UserUpdateSchema, AllUserSchema, UsernameSchema, UserSchemaByPos
 
 
 blp = Blueprint('Users', 'users', description='Operations on users')
@@ -15,8 +15,10 @@ blp = Blueprint('Users', 'users', description='Operations on users')
 
 @blp.route('/register')
 class UserRegister(MethodView):
+
     @blp.arguments(UserSchema)
     def post(self, user_data):
+
         if UserModel.query.filter(UserModel.username == user_data['username']).first():
             abort(409, message='A user with that username already exists.')
         
@@ -36,8 +38,10 @@ class UserRegister(MethodView):
 
 @blp.route('/login')
 class UserLogin(MethodView):
+
     @blp.arguments(PlainUserSchema)
     def post(self, user_data):
+
         user = UserModel.query.filter(
             UserModel.username == user_data['username']
         ).first()
@@ -56,10 +60,12 @@ class UserLogin(MethodView):
 
 @blp.route('/update/<int:user_id>')
 class UpdateInfo(MethodView):
+
     @jwt_required()
     @blp.arguments(UserUpdateSchema)
     @blp.response(200, UserSchema)
     def put(self, user_data, user_id):
+
         id = get_jwt()['sub']
         user = UserModel.query.get(user_id)
         if user and user.id == id:
@@ -78,20 +84,25 @@ class UpdateInfo(MethodView):
 
 @blp.route('/get_all')
 class GetUsers(MethodView):
+
     # Anyone who is logged in can view all users info (points, etc. NO PASSWORD)
     @jwt_required()
     @blp.response(200, AllUserSchema(many=True))
     def get(self):
+
         return UserModel.query.all()
 
         
 @blp.route('/refresh')
 class TokenRefresh(MethodView):
+
     # Getting a non-fresh token (do not let delete account with non-fresh token)
     @jwt_required(refresh=True)
     def post(self):
+
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
+
         return {'access_token': new_token}
 
 
@@ -99,31 +110,50 @@ class TokenRefresh(MethodView):
 class UserLogout(MethodView):
     @jwt_required()
     def post(self):
+
         jti = get_jwt()['jti']
         blocklist_item = BlocklistModel(jti)
         db.session.add(blocklist_item)
         db.session.commit()
+
         return {'message': 'Successfully logged out.'}
 
 
 @blp.route('/user/<int:user_id>')
 class User(MethodView):
+
     @blp.response(200, UserSchema)
     @jwt_required()
     def get(self, user_id):
-        id = get_jwt()["sub"]
+
+        id = get_jwt_identity()
         # if user_id == id:
         user = UserModel.query.get_or_404(user_id)
         return user
         # else:
         #     abort(401, message="Unauthorised")
 
+@blp.route('/user_pos')
+class UserPosition(MethodView):
+
+    @blp.response(200, UserSchemaByPos)
+    @jwt_required()
+    def get(self, user_position):
+
+        user = UserModel.query.filter(
+            UserModel.position == user_position
+        ).first()
+
+        return user
+
 @blp.route('/user')
 class User(MethodView):
+
     @blp.arguments(UsernameSchema)
     @blp.response(200, UsernameSchema)
     @jwt_required()
     def get(self, user_data):
+
         id = get_jwt_identity()
         # if user_id == id:
         user = UserModel.query.filter(
@@ -135,8 +165,10 @@ class User(MethodView):
 
 @blp.route('/delete')
 class UserDelete(MethodView):
+
     @jwt_required(fresh=True)
     def delete(self):
+        
         # Delete all bets first
         user_id = get_jwt()['sub']
         user = UserModel.query.filter(UserModel.id == user_id).first()

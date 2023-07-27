@@ -25,9 +25,14 @@ class Bet(MethodView):
     # Anyone who is logged in can delete their own bets only
     @jwt_required()
     def delete(self, bet_id):
+
         user_id = get_jwt()["sub"]
-        bet = BetsModel.query.filter(BetsModel.user_id == user_id,
-                                     BetsModel.id == bet_id).first()
+
+        bet = BetsModel.query.filter(
+            BetsModel.user_id == user_id,
+            BetsModel.id == bet_id
+            ).first()
+        
         if bet:
             db.session.delete(bet)
             db.session.commit()
@@ -41,17 +46,25 @@ class BetList(MethodView):
     # The user can delete their own bets only
     @jwt_required()
     def delete(self):
+
         user_id = get_jwt()['sub']
-        user = UserModel.query.filter(UserModel.id == user_id).first()
-        for bet in user.bets:
-            db.session.delete(bet)
-            db.session.commit()
-        return {"message": "All bets deleted."}
-    
+        user = UserModel.query.filter(
+            UserModel.id == user_id
+            ).first()
+        
+        if user:
+            for bet in user.bets:
+                db.session.delete(bet)
+                db.session.commit()
+            return {"message": "All bets deleted."}
+        else:
+            return {"message": "User not found"}
+        
     # Anyone who is logged in can get all bets
     @jwt_required()
     @blp.response(200, BetsSchema(many=True))
     def get(self):
+
         return BetsModel.query.all()
     
     # Users can post their own bets
@@ -84,13 +97,15 @@ class BetList(MethodView):
                 db.session.commit()
             except SQLAlchemyError:
                 abort(500, message="An error occurred while inserting the bet.")
+
         return bet
 
+    # Users can update their own bets
     @jwt_required()
     @blp.arguments(BetsSchema)
     @blp.response(200, BetsSchema)
     def put(self, bet_data):
-        # Users can update their own bets
+
         user_id = get_jwt_identity()
 
         match_ = MatchesModel.query.filter(
@@ -127,7 +142,9 @@ class BetList(MethodView):
     @jwt_required()
     @blp.response(200, BetsSchema(many=True))
     def get(self):
+
         user_id = get_jwt_identity()
+
         return BetsModel.query.filter(
             BetsModel.user_id == user_id
         ).all()
@@ -139,6 +156,7 @@ class BetList(MethodView):
     @blp.arguments(MultipleUpdateBetsSchema)
     @blp.response(200, MultipleUpdateBetsSchema)
     def put(self, bet_data):
+        
         # Users can update their own bets
         user_id = get_jwt_identity()
 
