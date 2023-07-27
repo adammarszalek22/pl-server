@@ -30,11 +30,14 @@ class UserSchema(PlainUserSchema):
     one_pointers = fields.Int()
     bets = fields.List(fields.Nested(PlainBetsSchema(), dump_only=True))
 
-class UserSchemaByPos(PlainUserSchema):
-    points = fields.Int()
+class UserSchemaByPos(Schema):
+    id = fields.Int(dump_only=True)
+    username = fields.Str(dump_only=True)
+
+    points = fields.Int(dump_only=True)
     position = fields.Int(required=True)
-    three_pointers = fields.Int()
-    one_pointers = fields.Int()
+    three_pointers = fields.Int(dump_only=True)
+    one_pointers = fields.Int(dump_only=True)
     bets = fields.List(fields.Nested(PlainBetsSchema(), dump_only=True))
 
 class UsernameSchema(Schema):
