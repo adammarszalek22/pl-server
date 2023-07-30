@@ -16,6 +16,7 @@ from resources.user import blp as UserBlueprint
 from resources.bets import blp as BetsBlueprint
 from resources.matches import blp as MatchesBlueprint
 from resources.groups import blp as GroupsBlueprint
+from resources.admin.admin import blp as AdminBlueprint
 from models.blocklist import BlocklistModel
 from db import db
 from models import MatchesModel, UserModel, GroupsModel
@@ -160,7 +161,7 @@ def create_app(db_url=None):
     migrate = Migrate(app, db)
     api = Api(app)
 
-    app.config["JWT_SECRET_KEY"] = 'adam'
+    app.config["JWT_SECRET_KEY"] = 'adam' #will be changed later
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
     jwt = JWTManager(app)
@@ -168,9 +169,7 @@ def create_app(db_url=None):
     @jwt.token_in_blocklist_loader
     def check_if_token_in_blocklist(jwt_header, jwt_payload):
         blocklist_item = BlocklistModel.query.get(jwt_payload['jti'])
-        if blocklist_item:
-            return True
-        return False
+        return blocklist_item != None
     
     @jwt.revoked_token_loader
     def revoked_token_callback(jwt_header, jwt_payload):
@@ -196,7 +195,7 @@ def create_app(db_url=None):
 
     @jwt.additional_claims_loader
     def add_claims_to_jwt(identity):
-        if identity == 1:
+        if identity == 'adam1234':
             return {'is_admin': True}
         return {'is_admin': False}
 
@@ -236,5 +235,6 @@ def create_app(db_url=None):
     api.register_blueprint(BetsBlueprint)
     api.register_blueprint(MatchesBlueprint)
     api.register_blueprint(GroupsBlueprint)
+    api.register_blueprint(AdminBlueprint)
 
     return app
