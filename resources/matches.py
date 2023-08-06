@@ -10,6 +10,7 @@ from schemas import MatchesSchema
 
 blp = Blueprint("Matches", "matches", description="Operations on matches")
 
+
 @blp.route("/matches")
 class MatchesList(MethodView):
     

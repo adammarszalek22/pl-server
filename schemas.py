@@ -13,15 +13,15 @@ class PlainUserSchema(Schema):
     username = fields.Str(required=True)
     password = fields.Str(required=True, load_only=True)
 
+'''
+Users
+'''
+
 class RegisterSchema(Schema):
     id = fields.Int(dump_only=True)
     username = fields.Str(required=True)
     password = fields.Str(required=True, load_only=True)
     password2 = fields.Str(required=True, load_only=True)
-
-'''
-Users
-'''
 
 class GroupUserSchema(PlainUserSchema):
     points = fields.Int()
@@ -135,6 +135,9 @@ class UserUpdateSchema(Schema):
     three_pointers = fields.Int(required=True)
     one_pointers = fields.Int(required=True)
     bets = fields.List(fields.Nested(PlainBetsSchema(), dump_only=True))
+
+class DeleteUserSchema(Schema):
+    user_id = fields.Int(required=True)
 
 
     

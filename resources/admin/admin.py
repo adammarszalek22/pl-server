@@ -7,7 +7,7 @@ from passlib.hash import pbkdf2_sha256
 from db import db
 from tasks import example
 from models import UserModel, BlocklistModel
-from schemas import PlainUserSchema, UserUpdateSchema
+from schemas import PlainUserSchema, UserUpdateSchema, DeleteUserSchema
 
 blp = Blueprint('Users-admin', 'users', description='Admin operations on users')
 
@@ -59,3 +59,27 @@ class UpdateInfo(MethodView):
             db.session.commit()
 
             return user
+
+@blp.route('/admin/delete')
+class DeleteUser(MethodView):
+
+    @jwt_required()
+    @blp.arguments(DeleteUserSchema)
+    def delete(self, data):
+        admin = get_jwt()
+        print(data)
+
+        if not admin["is_admin"]:
+            abort(401, message="Unauthorized")
+
+        user = UserModel.query.get_or_404(data["user_id"])
+        
+        # Delete all bets first
+        for bet in user.bets:
+            db.session.delete(bet)
+            db.session.commit()
+
+        db.session.delete(user)
+        db.session.commit()
+
+        return {'message': 'User deleted.'}
