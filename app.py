@@ -49,6 +49,8 @@ def create_app(db_url=None):
                     ).first()
                 if match:
                     match.finished = i["finished"]
+                    match.goal1 = i["team_h_score"]
+                    match.goal2 = i["team_a_score"]
                     db.session.add(match)
                     db.session.commit()
                 else:
@@ -130,19 +132,19 @@ def create_app(db_url=None):
                 group.positions = pos_string
                 db.session.add(group)
                 db.session.commit()
-    
+    scheduler_time = 100
     matches_scheduler.add_job(id = 'Updating matches',
                       func = get_matches,
                       trigger = 'interval',
-                      seconds = 120)
+                      seconds = scheduler_time)
     scheduler.add_job(id = 'Comparing guesses',
                       func = compare_guesses,
                       trigger = 'interval',
-                      seconds = 120)
+                      seconds = scheduler_time)
     group_pos_scheduler.add_job(id = 'Group positions',
                       func = groups_positions,
                       trigger = 'interval',
-                      seconds = 120)
+                      seconds = scheduler_time)
     
     matches_scheduler.start()
     scheduler.start()
