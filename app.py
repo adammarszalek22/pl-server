@@ -61,7 +61,6 @@ def create_app(db_url=None):
                     )
                     db.session.add(match)
                     db.session.commit()
-            #print([match1.finished for match1 in MatchesModel.query.all()])
             print('Matches added')
         
     def compare_guesses():

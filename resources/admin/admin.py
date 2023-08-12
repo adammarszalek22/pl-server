@@ -67,7 +67,6 @@ class DeleteUser(MethodView):
     @blp.arguments(DeleteUserSchema)
     def delete(self, data):
         admin = get_jwt()
-        print(data)
 
         if not admin["is_admin"]:
             abort(401, message="Unauthorized")
