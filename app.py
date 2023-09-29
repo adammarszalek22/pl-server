@@ -30,7 +30,7 @@ def create_app(db_url=None):
     matches_scheduler = APScheduler()
     scheduler = APScheduler()
     group_pos_scheduler = APScheduler()
-
+ 
     # to be fixed, don't want nested functions
     def get_matches():
         # getting match info from the fantasy premier league API
