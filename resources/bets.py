@@ -1,7 +1,6 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
-from passlib.hash import pbkdf2_sha256
+from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
@@ -15,7 +14,7 @@ blp = Blueprint("Bets", "bets", description="Operations on bets")
 @blp.route("/bet/<int:bet_id>")
 class Bet(MethodView):
 
-    # Anyone who is logged in
+    # Anyone who is logged in can see anyone's bet (probably will be changed)
     @jwt_required()
     @blp.response(200, BetsSchema)
     def get(self, bet_id):
@@ -26,7 +25,7 @@ class Bet(MethodView):
     @jwt_required()
     def delete(self, bet_id):
 
-        user_id = get_jwt()["sub"]
+        user_id = get_jwt_identity()
 
         bet = BetsModel.query.filter(
             BetsModel.user_id == user_id,
