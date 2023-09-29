@@ -1,8 +1,6 @@
 from flask.views import MethodView
-from flask_smorest import Blueprint, abort
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
-from passlib.hash import pbkdf2_sha256
-from sqlalchemy.exc import SQLAlchemyError
+from flask_smorest import Blueprint
+from flask_jwt_extended import jwt_required
 
 from db import db
 from models import MatchesModel

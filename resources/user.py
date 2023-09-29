@@ -5,7 +5,6 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 from passlib.hash import pbkdf2_sha256
 
 from db import db
-from tasks import example
 from models import UserModel, BlocklistModel
 from schemas import PlainUserSchema, UserSchema, AllUserSchema, UsernameSchema, UserSchemaByPos, RegisterSchema, FirstTenSchema
 
