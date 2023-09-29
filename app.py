@@ -44,6 +44,7 @@ def create_app(db_url=None):
                     ).first()
                 if match:
                     # if match is already in database, update match info
+                    match.start_time = i["kickoff_time"]
                     match.finished = i["finished"]
                     match.goal1 = i["team_h_score"]
                     match.goal2 = i["team_a_score"]
@@ -146,7 +147,7 @@ def create_app(db_url=None):
                 db.session.add(group)
                 db.session.commit()
 
-    scheduler_time = 100
+    scheduler_time = 200
     matches_scheduler.add_job(id = 'Updating matches',
                       func = get_matches,
                       trigger = 'interval',
