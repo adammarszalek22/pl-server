@@ -1,5 +1,4 @@
 import os
-import redis
 import requests
 import json
 
@@ -27,7 +26,7 @@ def create_app(db_url=None):
     
     app = Flask(__name__)
     load_dotenv()
-    
+
     matches_scheduler = APScheduler()
     scheduler = APScheduler()
     group_pos_scheduler = APScheduler()
