@@ -33,7 +33,7 @@ class UserRegister(MethodView):
             username = user_data['username'],
             password = pbkdf2_sha256.hash(user_data['password']),
             points = 0,
-            position = 0,
+            position = 10000,
             three_pointers = 0,
             one_pointers = 0
         )
