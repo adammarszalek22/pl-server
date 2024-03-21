@@ -148,6 +148,20 @@ class BetList(MethodView):
             BetsModel.user_id == user_id
         ).all()
 
+@blp.route("/gmwk_bet_by_user_id")
+class BetList(MethodView):
+    
+    # Anyone who is logged in can get all their bets
+    @jwt_required()
+    @blp.response(200, BetsSchema(many=True))
+    def get(self):
+
+        user_id = get_jwt_identity()
+
+        return BetsModel.query.filter(
+            BetsModel.user_id == user_id
+        ).all()
+
 @blp.route("/multiple_bets_update")
 class BetList(MethodView):
 

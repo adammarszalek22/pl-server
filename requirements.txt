@@ -11,3 +11,4 @@ psycopg2
 requests
 datetime
 flask_apscheduler
+Flask-Cors

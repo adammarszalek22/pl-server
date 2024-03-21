@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
+from flask_cors import CORS
 
 from db import db
 from resources.user import blp as UserBlueprint
@@ -26,6 +27,9 @@ def create_app(db_url=None):
     
     app = Flask(__name__)
     load_dotenv()
+
+    # Enable CORS for all routes
+    CORS(app)
 
     matches_scheduler = APScheduler()
     scheduler = APScheduler()
