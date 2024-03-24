@@ -40,7 +40,14 @@ class UserRegister(MethodView):
         db.session.add(user)
         db.session.commit()
 
-        return {'message': 'User created successfully.'}
+        access_token = create_access_token(identity=user.id, fresh=True)
+        refresh_token = create_refresh_token(identity=user.id)
+        return {
+                'message': 'User created successfully.',
+                'access_token': access_token,
+                'refresh_token': refresh_token, 
+                'user_id': user.id
+                }
 
 
 @blp.route('/login')
@@ -57,9 +64,11 @@ class UserLogin(MethodView):
         if user and pbkdf2_sha256.verify(user_data['password'], user.password):
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)
-            return {'access_token': access_token,
-                    'refresh_token': refresh_token, 
-                    'user_id': user.id}
+            return {
+                'access_token': access_token,
+                'refresh_token': refresh_token, 
+                'user_id': user.id
+                }
         elif not user:
             abort(401, message='User not found')
         else:
