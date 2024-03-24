@@ -67,8 +67,6 @@ class AllUserSchema(PlainUserSchema):
     three_pointers = fields.Int()
     one_pointers = fields.Int()
 
-
-
 '''
 Bets
 '''
@@ -123,7 +121,6 @@ class DeleteUserFromGroup(Schema):
 
 class MyGroupSchema(Schema):
     user_id = fields.Int(required=True)
-    
 
 '''
 ADMIN
@@ -138,7 +135,3 @@ class UserUpdateSchema(Schema):
 
 class DeleteUserSchema(Schema):
     user_id = fields.Int(required=True)
-
-
-    
-
