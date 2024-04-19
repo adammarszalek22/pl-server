@@ -229,7 +229,7 @@ class BetList(MethodView):
             if match_ and has_passed(convert_to_datetime(match_.start_time)):
                 abort(403, message="Cannot update the bet after match has started.")
 
-        for match_id, goals in bet_data['match_id'].items():
+        for match_id, goals in bet_data['predictions'].items():
             
             exisiting_bet = BetsModel.query.filter(
                 BetsModel.match_id == match_id,

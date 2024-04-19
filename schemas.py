@@ -82,7 +82,7 @@ class MultipleUpdateBetsSchema(Schema):
     user = fields.Nested(PlainUserSchema(), dump_only=True)
     
 class MultipleUpdateBetsSchemaNew(Schema):
-    match_id = fields.Dict(keys = fields.Str(), values = fields.Dict(keys = fields.Str(), values = fields.Int()), required = True)
+    predictions = fields.Dict(keys = fields.Str(), values = fields.Dict(keys = fields.Str(), values = fields.Int()), required = True)
 
 class MultipleUpdateBetsSchemaResponseNew(Schema):
     id = fields.Int(dump_only = True)
