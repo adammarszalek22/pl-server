@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
 from models import BetsModel, UserModel, MatchesModel
-from schemas import BetsSchema, MultipleUpdateBetsSchema, MultipleUpdateBetsSchemaNew
+from schemas import BetsSchema, MultipleUpdateBetsSchema, MultipleUpdateBetsSchemaNew, MultipleUpdateBetsSchemaResponseNew
 from date_time import convert_to_datetime, has_passed
 
 blp = Blueprint("Bets", "bets", description="Operations on bets")
@@ -204,7 +204,7 @@ class BetList(MethodView):
                 all_bets.append(new_bet)
                 db.session.add(new_bet)
                 db.session.commit()
-
+                
         return all_bets
 
 @blp.route("/multiple_bets_update_new")
@@ -212,13 +212,13 @@ class BetList(MethodView):
 
     @jwt_required()
     @blp.arguments(MultipleUpdateBetsSchemaNew)
-    @blp.response(200, MultipleUpdateBetsSchemaNew)
+    @blp.response(200, MultipleUpdateBetsSchemaResponseNew)
     def put(self, bet_data):
         
         # Users can update their own bets
         user_id = get_jwt_identity()
         
-        all_bets = []
+        all_bets = {}
         
         for match_id, goals in bet_data.items():
             
@@ -226,10 +226,10 @@ class BetList(MethodView):
                 MatchesModel.match_id == match_id
             ).first()
             
-            if has_passed(convert_to_datetime(match_.start_time)):
+            if match_ and has_passed(convert_to_datetime(match_.start_time)):
                 abort(403, message="Cannot update the bet after match has started.")
-        
-        for match_id, goals in bet_data.items():
+
+        for match_id, goals in bet_data['match_id'].items():
             
             exisiting_bet = BetsModel.query.filter(
                 BetsModel.match_id == match_id,
@@ -244,7 +244,7 @@ class BetList(MethodView):
                 exisiting_bet.goal1 = goals["goal1"]
                 exisiting_bet.goal2 = goals["goal2"]
                 exisiting_bet.done = 'no'
-                all_bets.append(exisiting_bet)
+                all_bets[match_id] = exisiting_bet
                 db.session.add(exisiting_bet)
             else:
                 new_bet = BetsModel()
@@ -253,9 +253,9 @@ class BetList(MethodView):
                 new_bet.goal1 = goals["goal1"]
                 new_bet.goal2 = goals["goal2"]
                 new_bet.done = 'no'
-                all_bets.append(new_bet)
+                all_bets[match_id] = new_bet
                 db.session.add(new_bet)
                 
         db.session.commit()
 
-        return all_bets
+        return {"bets": all_bets}
