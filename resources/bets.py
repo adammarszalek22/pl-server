@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
 from models import BetsModel, UserModel, MatchesModel
-from schemas import BetsSchema, MultipleUpdateBetsSchema
+from schemas import BetsSchema, MultipleUpdateBetsSchema, MultipleUpdateBetsSchemaNew
 from date_time import convert_to_datetime, has_passed
 
 blp = Blueprint("Bets", "bets", description="Operations on bets")
@@ -204,5 +204,58 @@ class BetList(MethodView):
                 all_bets.append(new_bet)
                 db.session.add(new_bet)
                 db.session.commit()
+
+        return all_bets
+
+@blp.route("/multiple_bets_update_new")
+class BetList(MethodView):
+
+    @jwt_required()
+    @blp.arguments(MultipleUpdateBetsSchemaNew)
+    @blp.response(200, MultipleUpdateBetsSchemaNew)
+    def put(self, bet_data):
+        
+        # Users can update their own bets
+        user_id = get_jwt_identity()
+        
+        all_bets = []
+        
+        for match_id, goals in bet_data.items():
+            
+            match_ = MatchesModel.query.filter(
+                MatchesModel.match_id == match_id
+            ).first()
+            
+            if has_passed(convert_to_datetime(match_.start_time)):
+                abort(403, message="Cannot update the bet after match has started.")
+        
+        for match_id, goals in bet_data.items():
+            
+            exisiting_bet = BetsModel.query.filter(
+                BetsModel.match_id == match_id,
+                BetsModel.user_id == user_id
+            ).first()
+            
+            match_ = MatchesModel.query.filter(
+                MatchesModel.match_id == match_id
+            ).first()
+                
+            if exisiting_bet:
+                exisiting_bet.goal1 = goals["goal1"]
+                exisiting_bet.goal2 = goals["goal2"]
+                exisiting_bet.done = 'no'
+                all_bets.append(exisiting_bet)
+                db.session.add(exisiting_bet)
+            else:
+                new_bet = BetsModel()
+                new_bet.user_id = user_id
+                new_bet.match_id = match_id
+                new_bet.goal1 = goals["goal1"]
+                new_bet.goal2 = goals["goal2"]
+                new_bet.done = 'no'
+                all_bets.append(new_bet)
+                db.session.add(new_bet)
+                
+        db.session.commit()
 
         return all_bets

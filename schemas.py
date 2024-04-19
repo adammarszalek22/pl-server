@@ -80,6 +80,11 @@ class MultipleUpdateBetsSchema(Schema):
     goal1 = fields.List(fields.Int(), required=True)
     goal2 = fields.List(fields.Int(), required=True)
     user = fields.Nested(PlainUserSchema(), dump_only=True)
+    
+class MultipleUpdateBetsSchemaNew(Schema):
+    id = fields.Int(dump_only = True)
+    match_id = fields.Dict(keys = fields.Str(), values = fields.Dict(keys = fields.Str(), values = fields.Int()), required = True)
+    user = fields.Nested(PlainUserSchema(), dump_only = True)
 
 '''
 Matches
