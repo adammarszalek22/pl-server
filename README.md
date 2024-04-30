@@ -18,6 +18,13 @@ I am also creating a website for this. You can view the progress here - https://
 The current version of this app can be run with 'flask run' or by using Docker. The modules from requirements.txt need to be installed using the command 'pip install -r requirements.txt'.
 (.env file is needed with DATABASE_URL)
 
-# TODO
-- add documentation
-- make registration return access_tokens (since there is no confirmation email or anything like that)
+# TODOS (DONE)
+- clean up the code - main file - done
+
+# TODOS
+- add routes documentation
+- make registration return access_tokens
+- clean up the code
+- to research stuff like pagination, sorting, etc. in the routes. I have learnt that in node.js but need to implement it here too, especially for when there is lots of users (that would be much more efficient than doing '/get_all', etc.)
+- some of the database tables aren't setup in the most efficient way or are lacking certain columns, to be looked into
+- MOVE THE DATABASE BY JAN 2025 AS ELEPHANTSQL WILL STOP WORKING
