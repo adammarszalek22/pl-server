@@ -1,6 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from flask import current_app
+from flask import request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
 from passlib.hash import pbkdf2_sha256
 
@@ -156,6 +157,31 @@ class UserPosition(MethodView):
             first10.append(user)
 
         return first10
+
+
+# New route, the one above to be deleted
+@blp.route('/users')
+class UserPosition(MethodView):
+
+    @blp.response(200, FirstTenSchema(many=True))
+    @jwt_required()
+    def get(self):
+        
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('limit', 10, type=int)
+        sort_by = request.args.get('sort_by', 'position')
+        sort_order = request.args.get('sort_order', 'asc')
+        
+        if sort_order == 'desc':
+            query = UserModel.query.order_by(getattr(UserModel, sort_by).desc())
+        else:
+            query = UserModel.query.order_by(getattr(UserModel, sort_by))
+
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        users = pagination.items
+
+        return users
+    
 
 @blp.route('/user')
 class User(MethodView):
