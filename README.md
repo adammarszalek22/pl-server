@@ -20,11 +20,11 @@ The current version of this app can be run with 'flask run' or by using Docker. 
 
 # TODOS (DONE)
 - clean up the code - main file - done
+- to research stuff like pagination, sorting, etc. in the routes. I have learnt that in node.js but need to implement it here too, especially for when there is lots of users (that would be much more efficient than doing '/get_all', etc.) - done (for Get users)
 
 # TODOS
 - add routes documentation
 - make registration return access_tokens
 - clean up the code
-- to research stuff like pagination, sorting, etc. in the routes. I have learnt that in node.js but need to implement it here too, especially for when there is lots of users (that would be much more efficient than doing '/get_all', etc.)
 - some of the database tables aren't setup in the most efficient way or are lacking certain columns, to be looked into
 - MOVE THE DATABASE BY JAN 2025 AS ELEPHANTSQL WILL STOP WORKING
