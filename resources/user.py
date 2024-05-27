@@ -1,6 +1,5 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from flask import current_app
 from flask import request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
 from passlib.hash import pbkdf2_sha256
@@ -14,7 +13,7 @@ blp = Blueprint('Users', 'users', description='Operations on users')
 
 
 @blp.route('/register')
-class UserRegister(MethodView):
+class UserRegistration(MethodView):
 
     @blp.arguments(RegisterSchema)
     @blp.response(201)
@@ -22,7 +21,7 @@ class UserRegister(MethodView):
 
         another_user = UserModel.query.filter(
             UserModel.username == user_data['username']
-            ).first()
+        ).first()
 
         if another_user:
             abort(409, message='A user with that username already exists.')
@@ -43,12 +42,13 @@ class UserRegister(MethodView):
 
         access_token = create_access_token(identity=user.id, fresh=True)
         refresh_token = create_refresh_token(identity=user.id)
+        
         return {
-                'message': 'User created successfully.',
-                'access_token': access_token,
-                'refresh_token': refresh_token, 
-                'user_id': user.id
-                }
+            'message': 'User created successfully.',
+            'access_token': access_token,
+            'refresh_token': refresh_token, 
+            'user_id': user.id
+        }
 
 
 @blp.route('/login')
@@ -57,27 +57,31 @@ class UserLogin(MethodView):
     @blp.arguments(PlainUserSchema)
     @blp.response(200)
     def post(self, user_data):
-
+        
         user = UserModel.query.filter(
             UserModel.username == user_data['username']
         ).first()
-
-        if user and pbkdf2_sha256.verify(user_data['password'], user.password):
-            access_token = create_access_token(identity=user.id, fresh=True)
-            refresh_token = create_refresh_token(identity=user.id)
-            return {
-                'access_token': access_token,
-                'refresh_token': refresh_token, 
-                'user_id': user.id
-                }
-        elif not user:
+            
+        if not user:
             abort(401, message='User not found')
-        else:
+            
+        if not pbkdf2_sha256.verify(user_data['password'], user.password):
             abort(401, message='Wrong password')
+
+            
+        access_token = create_access_token(identity=user.id, fresh=True)
+        refresh_token = create_refresh_token(identity=user.id)
+        
+        return {
+            'access_token': access_token,
+            'refresh_token': refresh_token, 
+            'user_id': user.id
+        }
+            
 
 
 @blp.route('/get_all')
-class GetUsers(MethodView):
+class GetAllUsers(MethodView):
 
     # Anyone who is logged in can view all users info (points, etc. NO PASSWORD)
     @jwt_required()
@@ -143,25 +147,28 @@ class UserPosition(MethodView):
 
 
 @blp.route('/first-ten')
-class UserPosition(MethodView):
+class GetTenUsersByPosition(MethodView):
 
     @blp.response(200, FirstTenSchema(many=True))
     @jwt_required()
     def get(self):
 
-        first10 = []
-        for i in range(1, 11):
-            user = UserModel.query.filter(
-                UserModel.position == i
-            ).first()
-            first10.append(user)
+        # first10 = []
+        # for i in range(1, 11):
+        #     user = UserModel.query.filter(
+        #         UserModel.position == i
+        #     ).first()
+        #     first10.append(user)
+        
+        first10 = UserModel.query.order_by(getattr(UserModel, 'position')).paginate(page=1, per_page=10, error_out=False)
+        users = first10.items
 
-        return first10
+        return users
 
 
 # New route, the one above to be deleted
 @blp.route('/users')
-class UserPosition(MethodView):
+class GetUsers(MethodView):
 
     @blp.response(200, FirstTenSchema(many=True))
     @jwt_required()
@@ -183,16 +190,16 @@ class UserPosition(MethodView):
         return users
     
 
-@blp.route('/user')
+@blp.route('/user/<string:username>')
 class User(MethodView):
 
-    @blp.arguments(UsernameSchema)
+    # @blp.arguments(UsernameSchema)
     @blp.response(200, UsernameSchema)
     @jwt_required()
-    def get(self, user_data):
-
+    def get(self, username):
+        
         user = UserModel.query.filter(
-            UserModel.username == user_data["username"]
+            UserModel.username == username
         ).first()
 
         return user

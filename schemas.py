@@ -55,6 +55,7 @@ class FirstTenSchema(Schema):
     one_pointers = fields.Int(dump_only=True)
 
 class UsernameSchema(Schema):
+    id = fields.Int(dump_only=True)
     username = fields.Str(required=True)
     points = fields.Int(dump_only=True)
     position = fields.Int(dump_only=True)
