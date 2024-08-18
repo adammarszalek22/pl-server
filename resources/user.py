@@ -29,11 +29,13 @@ class UserRegistration(MethodView):
         if user_data["password"] != user_data["password2"]:
             abort(401, message="Passwords do not match")
         
+        user_count = UserModel.query.count()
+        
         user = UserModel(
             username = user_data['username'],
             password = pbkdf2_sha256.hash(user_data['password']),
             points = 0,
-            position = 10000,
+            position = user_count + 1,
             three_pointers = 0,
             one_pointers = 0
         )
