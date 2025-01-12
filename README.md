@@ -2,7 +2,7 @@
 
 This is a server app that allows users to post their Premier League score predictions. Every user get awarded 3 points (three_pointer) for guessing the exact score or 1 point (one_pointer) for guessing the right winner (or draw).
 
-The server is live and can be connected to with this link 'https://pl-server.onrender.com' (append the desired routes from resources files, for example 'https://pl-server.onrender.com/register')
+~~The server is live and can be connected to with this link 'https://pl-server.onrender.com' (append the desired routes from resources files, for example 'https://pl-server.onrender.com/register')~~
 
 # How it works
 
